@@ -1,16 +1,19 @@
 package io.github.hulang1024.rockpaperscissors.match.domain;
 
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MatchTests {
     @Test
     void testCreate() {
-        MatchService matchService = new MatchService();
-        Match match = matchService.startMatch(1, 2, 3);
+        MatchFactory matchFactory = new MatchFactory();
+        Match match = matchFactory.startMatch(1, 2, 3);
 
         assertNotNull(match.getId());
-        assertSame(Match.MatchState.MatchReady, match.getState());
+        assertSame(Match.State.Ready, match.getState());
         assertSame(3, match.getRoundNumber());
         assertNull(match.getStartTime());
         assertNull(match.getEndTime());
@@ -22,36 +25,42 @@ public class MatchTests {
 
     @Test
     void testRoundCreateAndMatchStateAndMatchTime() {
-        MatchService matchService = new MatchService();
-        Match match = matchService.startMatch(1, 2, 3);
-        assertSame(Match.MatchState.MatchReady, match.getState());
+        MatchFactory matchFactory = new MatchFactory();
+        Match match = matchFactory.startMatch(1, 2, 3);
+        assertSame(Match.State.Ready, match.getState());
         assertNull(match.getStartTime());
         assertNull(match.getEndTime());
         match.startRound();
-        assertSame(match.getNowRound().getStartTime(), match.getStartTime());
+        LocalDateTime firstRoundStartTime = match.getNowRound().getStartTime();
+        assertSame(firstRoundStartTime, match.getStartTime());
         assertNull(match.getEndTime());
-        assertSame(Match.MatchState.RoundInProgress, match.getState());
+        assertSame(Match.State.RoundInProgress, match.getState());
         match.onParticipantChoice(1, Option.Scissors);
-        assertSame(match.getNowRound().getStartTime(), match.getStartTime());
+        assertSame(firstRoundStartTime, match.getStartTime());
         assertNull(match.getEndTime());
         match.onParticipantChoice(2, Option.Rock);
-        assertSame(Match.MatchState.RoundEnd, match.getState());
-        assertSame(match.getNowRound().getStartTime(), match.getStartTime());
-        assertNotNull(match.getEndTime());
+        assertSame(Match.State.RoundEnd, match.getState());
+        assertSame(firstRoundStartTime, match.getStartTime());
+        assertNull(match.getEndTime());
         assertSame(1, match.getNowRound().getNo());
         assertSame(1, match.getHistoryRounds().size());
         match.startRound();
-        assertSame(Match.MatchState.RoundInProgress, match.getState());
+        assertSame(Match.State.RoundInProgress, match.getState());
         match.onParticipantChoice(1, Option.Paper);
         match.onParticipantChoice(2, Option.Rock);
-        assertSame(Match.MatchState.RoundEnd, match.getState());
+        assertSame(Match.State.RoundEnd, match.getState());
+        assertSame(firstRoundStartTime, match.getStartTime());
+        assertNull(match.getEndTime());
         assertSame(2, match.getNowRound().getNo());
         assertSame(2, match.getHistoryRounds().size());
         match.startRound();
-        assertSame(Match.MatchState.RoundInProgress, match.getState());
+        assertSame(Match.State.RoundInProgress, match.getState());
         match.onParticipantChoice(1, Option.Rock);
         match.onParticipantChoice(2, Option.Rock);
-        assertSame(Match.MatchState.MatchEnd, match.getState());
+        LocalDateTime lastRoundEndTime = match.getNowRound().getEndTime();
+        assertSame(Match.State.End, match.getState());
+        assertSame(firstRoundStartTime, match.getStartTime());
+        assertSame(lastRoundEndTime, match.getEndTime());
         assertSame(3, match.getNowRound().getNo());
         assertSame(3, match.getHistoryRounds().size());
 
@@ -60,8 +69,8 @@ public class MatchTests {
 
     @Test
     void testCallRoundOnParticipantChoice() {
-        MatchService matchService = new MatchService();
-        Match match = matchService.startMatch(1, 2, 3);
+        MatchFactory matchFactory = new MatchFactory();
+        Match match = matchFactory.startMatch(1, 2, 3);
 
         match.startRound();
         assertNull(match.getNowRound().getFirstChoice());

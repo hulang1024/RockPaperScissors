@@ -1,7 +1,12 @@
 package io.github.hulang1024.rockpaperscissors.match.domain;
 
+import org.springframework.lang.NonNull;
+
 public class Judge {
-    public Option judgeWinner(Option a, Option b) {
+    public Option judgeWinner(@NonNull Option a, @NonNull Option b) {
+        if (a == null || b == null) {
+            throw new IllegalArgumentException();
+        }
         if (a == b) {
             return null;
         }
