@@ -9,9 +9,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MatchTests {
     @Test
     void testCreate() {
-        MatchFactory matchFactory = new MatchFactory();
-        Match match = matchFactory.startMatch(1, 2, 3);
-
+        Match match = Match.ready("1", 1, 2, 3);
+        assertSame("1", match.getId());
         assertNotNull(match.getId());
         assertSame(Match.State.Ready, match.getState());
         assertSame(3, match.getRoundNumber());
@@ -25,8 +24,7 @@ public class MatchTests {
 
     @Test
     void testRoundCreateAndMatchStateAndMatchTime() {
-        MatchFactory matchFactory = new MatchFactory();
-        Match match = matchFactory.startMatch(1, 2, 3);
+        Match match = Match.ready("1", 1, 2, 3);
         assertSame(Match.State.Ready, match.getState());
         assertNull(match.getStartTime());
         assertNull(match.getEndTime());
@@ -69,8 +67,7 @@ public class MatchTests {
 
     @Test
     void testCallRoundOnParticipantChoice() {
-        MatchFactory matchFactory = new MatchFactory();
-        Match match = matchFactory.startMatch(1, 2, 3);
+        Match match = Match.ready("1", 1, 2, 3);
 
         match.startRound();
         assertNull(match.getNowRound().getFirstChoice());

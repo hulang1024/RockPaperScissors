@@ -8,7 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -16,13 +16,33 @@ import java.util.Set;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
 public class Match {
-    private @NonNull String id;
-    private @NonNull State state;
-    private @NonNull Object firstParticipantId;
-    private @NonNull Object secondParticipantId;
+    @NonNull
+    private String id;
+    @NonNull
+    private State state;
+    @NonNull
+    private Object firstParticipantId;
+    @NonNull
+    private Object secondParticipantId;
     private int roundNumber;
-    private @Nullable Round nowRound;
-    private @NonNull Set<Round> historyRounds;
+    @Nullable
+    private Round nowRound;
+    @NonNull
+    private Set<Round> historyRounds;
+
+    public static Match ready(@NonNull String id,
+                              @NonNull Object participant1Id,
+                              @NonNull Object participant2Id,
+                              int roundNumber) {
+        return new Match(
+            id,
+            Match.State.Ready,
+            participant1Id,
+            participant2Id,
+            roundNumber,
+            null,
+            new HashSet<>());
+    }
 
     public void startRound() {
         if (state != State.Ready && state != State.RoundEnd) {
@@ -41,11 +61,12 @@ public class Match {
         }
         nowRound.onParticipantChoice(participantId, choice, Objects.equals(participantId, firstParticipantId));
         if (nowRound.isEnd()) {
-            this.endRound();
+            endRound();
         }
     }
 
-    public @Nullable LocalDateTime getStartTime() {
+    @Nullable
+    public LocalDateTime getStartTime() {
         if (state == State.Ready) {
             return null;
         }
@@ -54,11 +75,16 @@ public class Match {
             : findRound(1).getStartTime();
     }
 
-    public @Nullable LocalDateTime getEndTime() {
+    @Nullable
+    public LocalDateTime getEndTime() {
         if (state != State.End) {
             return null;
         }
         return findRound(roundNumber).getEndTime();
+    }
+
+    public Set<Round> getHistoryRounds() {
+        return new HashSet<>(historyRounds);
     }
 
     private Round findRound(int no) {
